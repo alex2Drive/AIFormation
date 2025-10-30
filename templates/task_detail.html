@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}{{ task.task_id }} - AIFormation{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="breadcrumb">
+        <a href="{{ url_for('index') }}">Dashboard</a>
+        <span class="separator">›</span>
+        <a href="{{ url_for('sprints') }}">Sprints</a>
+        <span class="separator">›</span>
+        <a href="{{ url_for('sprint_detail', sprint_num=sprint.number) }}">Sprint {{ sprint.number }}</a>
+        <span class="separator">›</span>
+        <span>{{ task.task_id }}</span>
+    </div>
+
+    <div class="page-header">
+        <div>
+            <div class="task-badges">
+                <span class="task-status status-{{ task.status }}">{{ task.status }}</span>
+                <span class="task-id-large">{{ task.task_id }}</span>
+                {% if task.priority %}
+                <span class="task-priority priority-{{ task.priority }}">{{ task.priority }}</span>
+                {% endif %}
+            </div>
+            <h1>{{ task.title }}</h1>
+        </div>
+    </div>
+
+    <div class="task-detail-grid">
+        <div class="task-main">
+            {% if task.description %}
+            <section class="detail-section">
+                <h2>Beschrijving</h2>
+                <p>{{ task.description }}</p>
+            </section>
+            {% endif %}
+
+            {% if task.execution_guide %}
+            <section class="detail-section">
+                <h2>Uitvoerings Gids</h2>
+                <ol class="execution-steps">
+                    {% for step in task.execution_guide %}
+                    <li>{{ step }}</li>
+                    {% endfor %}
+                </ol>
+            </section>
+            {% endif %}
+
+            {% if task.deliverables %}
+            <section class="detail-section">
+                <h2>Deliverables</h2>
+                <ul class="deliverables-list">
+                    {% for deliverable in task.deliverables %}
+                    <li>{{ deliverable }}</li>
+                    {% endfor %}
+                </ul>
+            </section>
+            {% endif %}
+
+            {% if task.validation_checklist %}
+            <section class="detail-section">
+                <h2>Validatie Checklist</h2>
+                <ul class="checklist">
+                    {% for item in task.validation_checklist %}
+                    <li>
+                        <input type="checkbox" disabled>
+                        <span>{{ item }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </section>
+            {% endif %}
+
+            {% if task.strict_constraints %}
+            <section class="detail-section">
+                <h2>Strikte Constraints</h2>
+                <div class="constraints-box">
+                    {% for key, value in task.strict_constraints.items() %}
+                    <div class="constraint-item">
+                        <strong>{{ key|replace('_', ' ')|title }}:</strong>
+                        {% if value is iterable and value is not string %}
+                        <ul>
+                            {% for item in value %}
+                            <li>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <span>{{ value }}</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+
+            {% if task.allowed_docs %}
+            <section class="detail-section">
+                <h2>Toegestane Documentatie</h2>
+                <ul class="docs-list">
+                    {% for doc in task.allowed_docs %}
+                    <li>📄 {{ doc }}</li>
+                    {% endfor %}
+                </ul>
+            </section>
+            {% endif %}
+        </div>
+
+        <div class="task-sidebar">
+            <div class="sidebar-section">
+                <h3>Informatie</h3>
+                <dl class="info-list">
+                    {% if task.type %}
+                    <dt>Type</dt>
+                    <dd>{{ task.type }}</dd>
+                    {% endif %}
+
+                    {% if task.assigned_to %}
+                    <dt>Toegewezen aan</dt>
+                    <dd>{{ task.assigned_to }}</dd>
+                    {% endif %}
+
+                    {% if task.estimated_hours %}
+                    <dt>Geschatte uren</dt>
+                    <dd>{{ task.estimated_hours }} uur</dd>
+                    {% endif %}
+
+                    {% if task.completed_at %}
+                    <dt>Voltooid op</dt>
+                    <dd>{{ task.completed_at }}</dd>
+                    {% endif %}
+
+                    {% if task.status_notes %}
+                    <dt>Status notities</dt>
+                    <dd>{{ task.status_notes }}</dd>
+                    {% endif %}
+                </dl>
+            </div>
+
+            {% if task.dependencies %}
+            <div class="sidebar-section">
+                <h3>Dependencies</h3>
+                <ul class="dependencies-list">
+                    {% for dep in task.dependencies %}
+                    <li>
+                        <a href="{{ url_for('task_detail', task_id=dep) }}">{{ dep }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <div class="sidebar-section">
+                <h3>Acties</h3>
+                <a href="{{ url_for('sprint_detail', sprint_num=sprint.number) }}" class="btn btn-block btn-secondary">Terug naar Sprint</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

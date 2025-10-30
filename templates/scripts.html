@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}Scripts - AIFormation{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Script Beheer</h1>
+        <p class="subtitle">Beheer en voer Python scripts uit</p>
+    </div>
+
+    <div class="scripts-section">
+        <h2>Beschikbare Scripts</h2>
+        <div class="scripts-grid">
+            {% for script in scripts %}
+            <div class="script-card status-{{ script.status }}">
+                <div class="script-icon">{{ script.icon }}</div>
+                <div class="script-content">
+                    <h3>{{ script.name }}</h3>
+                    <p>{{ script.description }}</p>
+                    <div class="script-meta">
+                        <code>{{ script.file }}</code>
+                    </div>
+                </div>
+                <div class="script-actions">
+                    <button class="btn btn-primary" onclick="showScriptInfo('{{ script.name }}', '{{ script.file }}', '{{ script.description }}')">
+                        ⚙️ Configureer
+                    </button>
+                    <div class="script-status">
+                        {% if script.status == 'ready' %}
+                        <span class="status-badge status-success">✓ Uitgevoerd</span>
+                        {% else %}
+                        <span class="status-badge status-pending">Nog niet uitgevoerd</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% if logs %}
+    <div class="logs-section">
+        <h2>Recente Logs</h2>
+        <div class="logs-list">
+            {% for log in logs %}
+            <div class="log-item">
+                <div class="log-icon">📝</div>
+                <div class="log-content">
+                    <h4>{{ log.name }}</h4>
+                    <div class="log-meta">
+                        <span>{{ log.size }}</span>
+                        <span>•</span>
+                        <span>{{ log.modified }}</span>
+                    </div>
+                </div>
+                <div class="log-actions">
+                    <button class="btn btn-sm btn-secondary" onclick="viewLog('{{ log.name }}')">Bekijk</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="help-section">
+        <h2>💡 Hoe te gebruiken</h2>
+        <div class="help-grid">
+            <div class="help-card">
+                <h3>1. Project Builder</h3>
+                <p>Start met het definiëren van je project. Dit script maakt gedetailleerde technische documentatie.</p>
+                <code>python project_builder_agent_v2.2.py "Je project beschrijving"</code>
+            </div>
+
+            <div class="help-card">
+                <h3>2. Sprint Generator</h3>
+                <p>Na de documentatie kun je development sprints genereren met uitvoerbare taken.</p>
+                <code>python sprint_generator_v2.2.py ./project_docs</code>
+            </div>
+
+            <div class="help-card">
+                <h3>3. Development Agents</h3>
+                <p>Voer de taken uit met AI agents die je code schrijven volgens de specificaties.</p>
+                <code>python development_agents_v2_3_enhanced.py ./project --docs ./project_docs --sprints ./sprints</code>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script Configuratie Modal -->
+<div id="scriptModal" class="modal">
+    <div class="modal-content">
+        <span class="modal-close" onclick="closeModal()">&times;</span>
+        <h2 id="modalTitle">Script Configuratie</h2>
+        <p id="modalDescription"></p>
+
+        <div class="form-section">
+            <h3>Parameters</h3>
+            <div id="scriptForm"></div>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeModal()">Annuleren</button>
+            <button class="btn btn-primary" onclick="runScript()">
+                <span id="runButtonText">▶️ Uitvoeren</span>
+            </button>
+        </div>
+
+        <div id="scriptOutput" class="script-output" style="display: none;">
+            <h3>Output</h3>
+            <pre id="outputText"></pre>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentScript = '';
+
+function showScriptInfo(name, file, description) {
+    currentScript = file;
+    document.getElementById('modalTitle').textContent = name;
+    document.getElementById('modalDescription').textContent = description;
+
+    const formHtml = getScriptForm(file);
+    document.getElementById('scriptForm').innerHTML = formHtml;
+
+    document.getElementById('scriptModal').style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('scriptModal').style.display = 'none';
+    document.getElementById('scriptOutput').style.display = 'none';
+}
+
+function getScriptForm(scriptFile) {
+    if (scriptFile === 'project_builder_agent_v2.2.py') {
+        return `
+            <div class="form-group">
+                <label for="projectDesc">Project Beschrijving</label>
+                <textarea id="projectDesc" class="form-control" rows="4" placeholder="Beschrijf je project in natuurlijke taal..."></textarea>
+                <small>Bijvoorbeeld: "Een web applicatie voor task management met user authentication"</small>
+            </div>
+        `;
+    } else if (scriptFile === 'sprint_generator_v2.2.py') {
+        return `
+            <div class="form-group">
+                <label for="docsPath">Project Docs Pad</label>
+                <input type="text" id="docsPath" class="form-control" value="./project_docs" placeholder="./project_docs">
+                <small>Pad naar de gegenereerde project documentatie</small>
+            </div>
+        `;
+    } else if (scriptFile === 'development_agents_v2_3_enhanced.py') {
+        return `
+            <div class="form-group">
+                <label for="projectRoot">Project Root</label>
+                <input type="text" id="projectRoot" class="form-control" value="./my_project" placeholder="./my_project">
+            </div>
+            <div class="form-group">
+                <label for="agentDocsPath">Docs Pad</label>
+                <input type="text" id="agentDocsPath" class="form-control" value="./project_docs" placeholder="./project_docs">
+            </div>
+            <div class="form-group">
+                <label for="sprintsPath">Sprints Pad</label>
+                <input type="text" id="sprintsPath" class="form-control" value="./sprints" placeholder="./sprints">
+            </div>
+            <div class="form-group">
+                <label for="executionMode">Uitvoerings Mode</label>
+                <select id="executionMode" class="form-control">
+                    <option value="parallel">Parallel (beide agents tegelijk)</option>
+                    <option value="sequential">Sequential (eerst backend, dan frontend)</option>
+                    <option value="backend">Alleen Backend</option>
+                    <option value="frontend">Alleen Frontend</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="maxTasks">Maximum Aantal Taken</label>
+                <input type="number" id="maxTasks" class="form-control" value="10" min="1">
+            </div>
+        `;
+    }
+    return '<p>Geen parameters nodig voor dit script.</p>';
+}
+
+function runScript() {
+    const outputDiv = document.getElementById('scriptOutput');
+    const outputText = document.getElementById('outputText');
+    const runButton = document.getElementById('runButtonText');
+
+    runButton.textContent = '⏳ Bezig...';
+    outputDiv.style.display = 'block';
+    outputText.textContent = 'Script wordt uitgevoerd...\n\nOmdat scripts lang kunnen duren, voer ze uit via de terminal:\n\n';
+
+    // Bouw het commando
+    let command = 'python ' + currentScript;
+
+    if (currentScript === 'project_builder_agent_v2.2.py') {
+        const desc = document.getElementById('projectDesc').value;
+        if (desc) {
+            command += ` "${desc}"`;
+        }
+    } else if (currentScript === 'sprint_generator_v2.2.py') {
+        const docsPath = document.getElementById('docsPath').value;
+        command += ` ${docsPath}`;
+    } else if (currentScript === 'development_agents_v2_3_enhanced.py') {
+        const projectRoot = document.getElementById('projectRoot').value;
+        const docsPath = document.getElementById('agentDocsPath').value;
+        const sprintsPath = document.getElementById('sprintsPath').value;
+        const mode = document.getElementById('executionMode').value;
+        const maxTasks = document.getElementById('maxTasks').value;
+
+        command += ` ${projectRoot} --docs ${docsPath} --sprints ${sprintsPath} --mode ${mode} --max-tasks ${maxTasks}`;
+    }
+
+    outputText.textContent += command + '\n\n';
+    outputText.textContent += 'Kopieer dit commando en voer het uit in je terminal.';
+
+    setTimeout(() => {
+        runButton.textContent = '▶️ Uitvoeren';
+    }, 2000);
+}
+
+function viewLog(logName) {
+    alert('Log viewer functionaliteit komt binnenkort.\n\nVoor nu kun je de log bekijken met:\ncat logs/' + logName);
+}
+
+// Sluit modal bij klikken buiten de content
+window.onclick = function(event) {
+    const modal = document.getElementById('scriptModal');
+    if (event.target == modal) {
+        closeModal();
+    }
+}
+</script>
+{% endblock %}
