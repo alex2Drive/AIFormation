@@ -327,6 +327,36 @@ def api_stats():
     })
 
 
+def find_available_port(preferred_port=5001, max_attempts=10):
+    """
+    Vindt een beschikbare poort, beginnend bij de preferred_port.
+    Windows reserveert vaak poort 5000, dus we beginnen bij 5001.
+    """
+    import socket
+
+    for port in range(preferred_port, preferred_port + max_attempts):
+        try:
+            # Test of de poort beschikbaar is
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                s.bind(('0.0.0.0', port))
+                return port
+        except OSError:
+            continue
+
+    # Als geen poort beschikbaar is, probeer een hogere range
+    for port in range(8000, 8100):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                s.bind(('0.0.0.0', port))
+                return port
+        except OSError:
+            continue
+
+    raise RuntimeError("Geen beschikbare poort gevonden. Sluit andere applicaties en probeer opnieuw.")
+
+
 if __name__ == '__main__':
     # Zorg ervoor dat directories bestaan
     DOCS_DIR.mkdir(exist_ok=True)
@@ -338,6 +368,21 @@ if __name__ == '__main__':
     print(f"📋 Docs directory: {DOCS_DIR}")
     print(f"🏃 Sprints directory: {SPRINTS_DIR}")
     print(f"📝 Logs directory: {LOGS_DIR}")
-    print("\n🌐 Server draait op: http://localhost:5000")
 
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Zoek een beschikbare poort (standaard 5001, niet 5000 vanwege Windows)
+    # Kan ook via environment variabele worden ingesteld
+    preferred_port = int(os.environ.get('FLASK_PORT', 5001))
+
+    try:
+        port = find_available_port(preferred_port)
+        print(f"\n🌐 Server draait op: http://localhost:{port}")
+        print(f"💡 Tip: Gebruik FLASK_PORT environment variabele om een andere poort te kiezen")
+        print(f"   Voorbeeld: set FLASK_PORT=8000 (Windows) of export FLASK_PORT=8000 (Linux/Mac)\n")
+
+        app.run(debug=True, host='0.0.0.0', port=port)
+    except RuntimeError as e:
+        print(f"\n❌ Error: {e}")
+        print("💡 Probeer andere applicaties te sluiten die poorten gebruiken.")
+    except Exception as e:
+        print(f"\n❌ Onverwachte fout: {e}")
+        print("💡 Controleer je firewall instellingen en poort permissies.")
