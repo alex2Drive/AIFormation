@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Sprints - AIFormation{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Development Sprints</h1>
+        <p class="subtitle">Uitvoerbare taken gegenereerd uit project documentatie</p>
+    </div>
+
+    {% if sprints %}
+    {% if overview %}
+    <div class="sprint-overview">
+        <h2>Overzicht</h2>
+        <div class="overview-stats">
+            <div class="overview-stat">
+                <span class="stat-label">Totaal Sprints</span>
+                <span class="stat-value">{{ overview.total_sprints or sprints|length }}</span>
+            </div>
+            <div class="overview-stat">
+                <span class="stat-label">Totaal Taken</span>
+                <span class="stat-value">{{ overview.total_tasks or 0 }}</span>
+            </div>
+            <div class="overview-stat">
+                <span class="stat-label">Geschatte Uren</span>
+                <span class="stat-value">{{ overview.total_estimated_hours or 0 }}</span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="sprints-list">
+        {% for sprint in sprints %}
+        <div class="sprint-card">
+            <div class="sprint-header">
+                <div>
+                    <h2>Sprint {{ sprint.sprint_number }}: {{ sprint.sprint_name }}</h2>
+                    {% if sprint.description %}
+                    <p class="sprint-description">{{ sprint.description }}</p>
+                    {% endif %}
+                </div>
+                <a href="{{ url_for('sprint_detail', sprint_num=sprint.sprint_number) }}" class="btn btn-primary">Bekijk Details</a>
+            </div>
+
+            <div class="sprint-meta">
+                {% if sprint.focus %}
+                <div class="meta-item">
+                    <strong>Focus:</strong> {{ sprint.focus }}
+                </div>
+                {% endif %}
+                {% if sprint.tasks %}
+                <div class="meta-item">
+                    <strong>Taken:</strong> {{ sprint.tasks|length }}
+                </div>
+                {% endif %}
+                {% if sprint.estimated_duration %}
+                <div class="meta-item">
+                    <strong>Geschat:</strong> {{ sprint.estimated_duration }}
+                </div>
+                {% endif %}
+            </div>
+
+            {% if sprint.tasks %}
+            {% set completed = sprint.tasks|selectattr('status', 'equalto', 'completed')|list|length %}
+            {% set total = sprint.tasks|length %}
+            <div class="progress-bar-container">
+                <div class="progress-bar" style="width: {{ (completed / total * 100) if total > 0 else 0 }}%"></div>
+            </div>
+            <div class="progress-stats">
+                <span>{{ completed }} / {{ total }} taken voltooid</span>
+                <span>{{ ((completed / total * 100) if total > 0 else 0)|round(1) }}%</span>
+            </div>
+
+            <div class="task-summary">
+                {% for task in sprint.tasks[:5] %}
+                <div class="task-summary-item">
+                    <span class="task-status status-{{ task.status }}">{{ task.status }}</span>
+                    <span class="task-id">{{ task.task_id }}</span>
+                    <span class="task-title">{{ task.title }}</span>
+                </div>
+                {% endfor %}
+                {% if sprint.tasks|length > 5 %}
+                <div class="task-summary-more">
+                    en {{ sprint.tasks|length - 5 }} meer taken...
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">🏃</div>
+        <h2>Geen Sprints Gevonden</h2>
+        <p>Er zijn nog geen development sprints gegenereerd.</p>
+        <p>Gebruik de <strong>Sprint Generator</strong> script om sprints te maken uit je project documentatie.</p>
+        <a href="{{ url_for('scripts') }}" class="btn btn-primary">Naar Scripts</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Documentatie - AIFormation{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Project Documentatie</h1>
+        <p class="subtitle">Gegenereerde technische specificaties en architectuur</p>
+    </div>
+
+    {% if docs %}
+    <div class="docs-grid">
+        {% if docs.overview %}
+        <a href="{{ url_for('doc_detail', doc_type='overview') }}" class="doc-card">
+            <div class="doc-icon">🎯</div>
+            <h3>Project Overzicht</h3>
+            <p>{{ docs.overview.project_name or 'Project Overview' }}</p>
+            <span class="doc-meta">PROJECT_OVERVIEW.json</span>
+        </a>
+        {% endif %}
+
+        {% if docs.requirements %}
+        <a href="{{ url_for('doc_detail', doc_type='requirements') }}" class="doc-card">
+            <div class="doc-icon">📝</div>
+            <h3>Requirements</h3>
+            <p>Functionele en niet-functionele eisen</p>
+            <span class="doc-meta">requirements/requirements.json</span>
+        </a>
+        {% endif %}
+
+        {% if docs.architecture %}
+        <a href="{{ url_for('doc_detail', doc_type='architecture') }}" class="doc-card">
+            <div class="doc-icon">🏗️</div>
+            <h3>Architectuur</h3>
+            <p>Technische stack en systeem ontwerp</p>
+            <span class="doc-meta">architecture/architecture.json</span>
+        </a>
+        {% endif %}
+
+        {% if docs.api %}
+        <a href="{{ url_for('doc_detail', doc_type='api') }}" class="doc-card">
+            <div class="doc-icon">🔌</div>
+            <h3>API Structuur</h3>
+            <p>Endpoints, authenticatie en data flows</p>
+            <span class="doc-meta">api/api_structure.json</span>
+        </a>
+        {% endif %}
+
+        {% if docs.workflows %}
+        <a href="{{ url_for('doc_detail', doc_type='workflows') }}" class="doc-card">
+            <div class="doc-icon">🔄</div>
+            <h3>Workflows</h3>
+            <p>User flows en business processen</p>
+            <span class="doc-meta">workflows/workflows.json</span>
+        </a>
+        {% endif %}
+
+        {% if docs.database %}
+        <a href="{{ url_for('doc_detail', doc_type='database') }}" class="doc-card">
+            <div class="doc-icon">🗄️</div>
+            <h3>Data Models</h3>
+            <p>Database schema en relaties</p>
+            <span class="doc-meta">database/data_models.json</span>
+        </a>
+        {% endif %}
+
+        {% if docs.classes %}
+        <a href="{{ url_for('doc_detail', doc_type='classes') }}" class="doc-card">
+            <div class="doc-icon">📦</div>
+            <h3>Class Structuur</h3>
+            <p>Backend en frontend classes</p>
+            <span class="doc-meta">classes/classes.json</span>
+        </a>
+        {% endif %}
+
+        {% if docs.files %}
+        <a href="{{ url_for('doc_detail', doc_type='files') }}" class="doc-card">
+            <div class="doc-icon">📁</div>
+            <h3>File Structuur</h3>
+            <p>Project folder hiërarchie</p>
+            <span class="doc-meta">files/file_structure.json</span>
+        </a>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <h2>Geen Documentatie Gevonden</h2>
+        <p>Er is nog geen project documentatie gegenereerd.</p>
+        <p>Gebruik de <strong>Project Builder</strong> script om te beginnen.</p>
+        <a href="{{ url_for('scripts') }}" class="btn btn-primary">Naar Scripts</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

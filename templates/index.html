@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - AIFormation{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Dashboard</h1>
+        <p class="subtitle">Overzicht van je AI-gedreven ontwikkelingsproces</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">📋</div>
+            <div class="stat-content">
+                <h3>{{ stats.total_docs }}</h3>
+                <p>Documenten</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">🏃</div>
+            <div class="stat-content">
+                <h3>{{ stats.total_sprints }}</h3>
+                <p>Sprints</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-content">
+                <h3>{{ stats.completed_tasks }}</h3>
+                <p>Taken Voltooid</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-content">
+                <h3>{{ stats.total_tasks }}</h3>
+                <p>Totaal Taken</p>
+            </div>
+        </div>
+    </div>
+
+    {% if stats.total_tasks > 0 %}
+    <div class="progress-section">
+        <h2>Voortgang</h2>
+        <div class="progress-bar-container">
+            <div class="progress-bar" style="width: {{ (stats.completed_tasks / stats.total_tasks * 100) | round }}%"></div>
+        </div>
+        <div class="progress-stats">
+            <span class="progress-label">Voltooid: {{ stats.completed_tasks }} / {{ stats.total_tasks }}</span>
+            <span class="progress-percentage">{{ (stats.completed_tasks / stats.total_tasks * 100) | round(1) }}%</span>
+        </div>
+
+        <div class="task-breakdown">
+            <div class="breakdown-item completed">
+                <span class="breakdown-dot"></span>
+                <span>Voltooid: {{ stats.completed_tasks }}</span>
+            </div>
+            <div class="breakdown-item in-progress">
+                <span class="breakdown-dot"></span>
+                <span>Bezig: {{ stats.in_progress_tasks }}</span>
+            </div>
+            <div class="breakdown-item pending">
+                <span class="breakdown-dot"></span>
+                <span>Wachtend: {{ stats.pending_tasks }}</span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="quick-actions">
+        <h2>Snelle Acties</h2>
+        <div class="action-grid">
+            <a href="{{ url_for('docs') }}" class="action-card {% if not stats.has_docs %}disabled{% endif %}">
+                <div class="action-icon">📋</div>
+                <h3>Bekijk Documentatie</h3>
+                <p>{% if stats.has_docs %}Verken project documentatie{% else %}Nog geen documentatie{% endif %}</p>
+            </a>
+
+            <a href="{{ url_for('sprints') }}" class="action-card {% if not stats.has_sprints %}disabled{% endif %}">
+                <div class="action-icon">🏃</div>
+                <h3>Bekijk Sprints</h3>
+                <p>{% if stats.has_sprints %}Zie sprint voortgang{% else %}Nog geen sprints{% endif %}</p>
+            </a>
+
+            <a href="{{ url_for('scripts') }}" class="action-card">
+                <div class="action-icon">⚙️</div>
+                <h3>Beheer Scripts</h3>
+                <p>Voer scripts uit en bekijk logs</p>
+            </a>
+        </div>
+    </div>
+
+    {% if not stats.has_docs %}
+    <div class="info-box">
+        <h3>🚀 Aan de slag</h3>
+        <p>Je hebt nog geen project documentatie. Start met de <strong>Project Builder</strong> script om je project te definiëren.</p>
+        <a href="{{ url_for('scripts') }}" class="btn btn-primary">Naar Scripts</a>
+    </div>
+    {% elif not stats.has_sprints %}
+    <div class="info-box">
+        <h3>📋 Volgende Stap</h3>
+        <p>Je documentatie is klaar! Gebruik de <strong>Sprint Generator</strong> om development sprints te maken.</p>
+        <a href="{{ url_for('scripts') }}" class="btn btn-primary">Naar Scripts</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

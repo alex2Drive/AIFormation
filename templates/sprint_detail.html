@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}Sprint {{ sprint.sprint_number }} - AIFormation{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="breadcrumb">
+        <a href="{{ url_for('index') }}">Dashboard</a>
+        <span class="separator">›</span>
+        <a href="{{ url_for('sprints') }}">Sprints</a>
+        <span class="separator">›</span>
+        <span>Sprint {{ sprint.sprint_number }}</span>
+    </div>
+
+    <div class="page-header">
+        <h1>Sprint {{ sprint.sprint_number }}: {{ sprint.sprint_name }}</h1>
+        {% if sprint.description %}
+        <p class="subtitle">{{ sprint.description }}</p>
+        {% endif %}
+    </div>
+
+    <div class="sprint-info">
+        <div class="info-grid">
+            {% if sprint.focus %}
+            <div class="info-item">
+                <strong>Focus:</strong>
+                <span>{{ sprint.focus }}</span>
+            </div>
+            {% endif %}
+            {% if sprint.estimated_duration %}
+            <div class="info-item">
+                <strong>Geschatte Duur:</strong>
+                <span>{{ sprint.estimated_duration }}</span>
+            </div>
+            {% endif %}
+            {% if sprint.start_date %}
+            <div class="info-item">
+                <strong>Start Datum:</strong>
+                <span>{{ sprint.start_date }}</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="stats-row">
+        <div class="stat-box">
+            <div class="stat-number">{{ stats.total }}</div>
+            <div class="stat-label">Totaal</div>
+        </div>
+        <div class="stat-box stat-completed">
+            <div class="stat-number">{{ stats.completed }}</div>
+            <div class="stat-label">Voltooid</div>
+        </div>
+        <div class="stat-box stat-in-progress">
+            <div class="stat-number">{{ stats.in_progress }}</div>
+            <div class="stat-label">Bezig</div>
+        </div>
+        <div class="stat-box stat-pending">
+            <div class="stat-number">{{ stats.pending }}</div>
+            <div class="stat-label">Wachtend</div>
+        </div>
+        {% if stats.blocked > 0 %}
+        <div class="stat-box stat-blocked">
+            <div class="stat-number">{{ stats.blocked }}</div>
+            <div class="stat-label">Geblokkeerd</div>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if sprint.tasks %}
+    <div class="progress-section">
+        <h2>Voortgang</h2>
+        <div class="progress-bar-container">
+            <div class="progress-bar" style="width: {{ (stats.completed / stats.total * 100) if stats.total > 0 else 0 }}%"></div>
+        </div>
+        <div class="progress-stats">
+            <span>{{ stats.completed }} / {{ stats.total }} taken voltooid</span>
+            <span>{{ ((stats.completed / stats.total * 100) if stats.total > 0 else 0)|round(1) }}%</span>
+        </div>
+    </div>
+
+    <div class="tasks-section">
+        <h2>Taken</h2>
+
+        <!-- Filter knoppen -->
+        <div class="filter-buttons">
+            <button class="filter-btn active" onclick="filterTasks('all')">Alle ({{ stats.total }})</button>
+            <button class="filter-btn" onclick="filterTasks('completed')">Voltooid ({{ stats.completed }})</button>
+            <button class="filter-btn" onclick="filterTasks('in_progress')">Bezig ({{ stats.in_progress }})</button>
+            <button class="filter-btn" onclick="filterTasks('pending')">Wachtend ({{ stats.pending }})</button>
+            {% if stats.blocked > 0 %}
+            <button class="filter-btn" onclick="filterTasks('blocked')">Geblokkeerd ({{ stats.blocked }})</button>
+            {% endif %}
+        </div>
+
+        <div class="tasks-grid">
+            {% for task in sprint.tasks %}
+            <div class="task-card" data-status="{{ task.status }}">
+                <div class="task-header">
+                    <div>
+                        <span class="task-status status-{{ task.status }}">{{ task.status }}</span>
+                        <span class="task-id">{{ task.task_id }}</span>
+                        {% if task.priority %}
+                        <span class="task-priority priority-{{ task.priority }}">{{ task.priority }}</span>
+                        {% endif %}
+                    </div>
+                    {% if task.estimated_hours %}
+                    <span class="task-estimate">⏱️ {{ task.estimated_hours }}h</span>
+                    {% endif %}
+                </div>
+
+                <h3 class="task-title">{{ task.title }}</h3>
+
+                {% if task.description %}
+                <p class="task-description">{{ task.description }}</p>
+                {% endif %}
+
+                <div class="task-meta">
+                    {% if task.type %}
+                    <span class="task-type">{{ task.type }}</span>
+                    {% endif %}
+                    {% if task.assigned_to %}
+                    <span class="task-assigned">👤 {{ task.assigned_to }}</span>
+                    {% endif %}
+                </div>
+
+                {% if task.deliverables %}
+                <div class="task-deliverables">
+                    <strong>Deliverables:</strong>
+                    <ul>
+                        {% for deliverable in task.deliverables[:3] %}
+                        <li>{{ deliverable }}</li>
+                        {% endfor %}
+                        {% if task.deliverables|length > 3 %}
+                        <li>... en {{ task.deliverables|length - 3 }} meer</li>
+                        {% endif %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <div class="task-actions">
+                    <a href="{{ url_for('task_detail', task_id=task.task_id) }}" class="btn btn-sm btn-secondary">Details</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="info-box">
+        <p>Deze sprint bevat geen taken.</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function filterTasks(status) {
+    const tasks = document.querySelectorAll('.task-card');
+    const buttons = document.querySelectorAll('.filter-btn');
+
+    // Update active button
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+
+    // Filter tasks
+    tasks.forEach(task => {
+        if (status === 'all' || task.dataset.status === status) {
+            task.style.display = 'block';
+        } else {
+            task.style.display = 'none';
+        }
+    });
+}
+</script>
+{% endblock %}

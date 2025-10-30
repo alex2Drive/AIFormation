@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}{{ doc_type|title }} - Documentatie{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="breadcrumb">
+        <a href="{{ url_for('index') }}">Dashboard</a>
+        <span class="separator">›</span>
+        <a href="{{ url_for('docs') }}">Documentatie</a>
+        <span class="separator">›</span>
+        <span>{{ doc_type|title }}</span>
+    </div>
+
+    <div class="page-header">
+        <h1>{{ doc_type|title|replace('_', ' ') }}</h1>
+        <div class="header-actions">
+            <button class="btn btn-secondary" onclick="toggleView()">
+                <span id="view-toggle-text">Toon JSON</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="visual-view" class="doc-content">
+        {% if doc_type == 'overview' %}
+            <div class="info-section">
+                <h2>{{ doc_data.project_name }}</h2>
+                <p class="lead">{{ doc_data.description }}</p>
+
+                {% if doc_data.key_features %}
+                <h3>Hoofdfuncties</h3>
+                <ul class="feature-list">
+                    {% for feature in doc_data.key_features %}
+                    <li>{{ feature }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+
+                {% if doc_data.technical_stack %}
+                <h3>Tech Stack</h3>
+                <div class="tech-stack">
+                    {% for tech in doc_data.technical_stack %}
+                    <span class="tech-badge">{{ tech }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+        {% elif doc_type == 'requirements' %}
+            <div class="info-section">
+                {% if doc_data.functional_requirements %}
+                <h2>Functionele Requirements</h2>
+                <ul class="requirements-list">
+                    {% for req in doc_data.functional_requirements %}
+                    <li>{{ req }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+
+                {% if doc_data.non_functional_requirements %}
+                <h2>Niet-Functionele Requirements</h2>
+                <ul class="requirements-list">
+                    {% for req in doc_data.non_functional_requirements %}
+                    <li>{{ req }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+
+        {% elif doc_type == 'architecture' %}
+            <div class="info-section">
+                {% if doc_data.architecture_type %}
+                <div class="info-box">
+                    <strong>Architectuur Type:</strong> {{ doc_data.architecture_type }}
+                </div>
+                {% endif %}
+
+                {% if doc_data.layers %}
+                <h2>Lagen</h2>
+                <div class="layers-grid">
+                    {% for layer in doc_data.layers %}
+                    <div class="layer-card">
+                        <h3>{{ layer.name or layer }}</h3>
+                        {% if layer.description %}
+                        <p>{{ layer.description }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if doc_data.technologies %}
+                <h2>Technologieën</h2>
+                <div class="tech-grid">
+                    {% for category, tech in doc_data.technologies.items() %}
+                    <div class="tech-category">
+                        <h4>{{ category|title }}</h4>
+                        <p>{{ tech }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+        {% elif doc_type == 'api' %}
+            <div class="info-section">
+                {% if doc_data.endpoints %}
+                <h2>API Endpoints</h2>
+                {% for endpoint in doc_data.endpoints %}
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method-badge method-{{ endpoint.method|lower }}">{{ endpoint.method }}</span>
+                        <code class="endpoint-path">{{ endpoint.path }}</code>
+                    </div>
+                    {% if endpoint.description %}
+                    <p>{{ endpoint.description }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+
+        {% elif doc_type == 'database' %}
+            <div class="info-section">
+                {% if doc_data.models or doc_data.tables %}
+                <h2>Database Models</h2>
+                {% for model in (doc_data.models or doc_data.tables or []) %}
+                <div class="model-card">
+                    <h3>{{ model.name }}</h3>
+                    {% if model.description %}
+                    <p>{{ model.description }}</p>
+                    {% endif %}
+                    {% if model.fields %}
+                    <h4>Velden:</h4>
+                    <ul class="fields-list">
+                        {% for field in model.fields %}
+                        <li>
+                            <code>{{ field.name }}</code>
+                            <span class="field-type">{{ field.type }}</span>
+                            {% if field.required %}<span class="field-badge required">Required</span>{% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+
+        {% elif doc_type == 'files' %}
+            <div class="info-section">
+                {% if doc_data.structure %}
+                <h2>File Structuur</h2>
+                <div class="file-tree">
+                    {{ render_file_tree(doc_data.structure) }}
+                </div>
+                {% endif %}
+            </div>
+
+        {% else %}
+            <!-- Generic view voor andere doc types -->
+            <div class="info-section">
+                <h2>Data</h2>
+                <div class="data-preview">
+                    {% for key, value in doc_data.items() %}
+                    <div class="data-item">
+                        <strong>{{ key|replace('_', ' ')|title }}:</strong>
+                        {% if value is mapping %}
+                            <ul>
+                            {% for k, v in value.items() %}
+                            <li><strong>{{ k }}:</strong> {{ v }}</li>
+                            {% endfor %}
+                            </ul>
+                        {% elif value is iterable and value is not string %}
+                            <ul>
+                            {% for item in value %}
+                            <li>{{ item }}</li>
+                            {% endfor %}
+                            </ul>
+                        {% else %}
+                            {{ value }}
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <div id="json-view" class="doc-content" style="display: none;">
+        <pre class="json-display"><code>{{ doc_json }}</code></pre>
+    </div>
+</div>
+
+<script>
+function toggleView() {
+    const visualView = document.getElementById('visual-view');
+    const jsonView = document.getElementById('json-view');
+    const toggleText = document.getElementById('view-toggle-text');
+
+    if (visualView.style.display === 'none') {
+        visualView.style.display = 'block';
+        jsonView.style.display = 'none';
+        toggleText.textContent = 'Toon JSON';
+    } else {
+        visualView.style.display = 'none';
+        jsonView.style.display = 'block';
+        toggleText.textContent = 'Toon Visueel';
+    }
+}
+</script>
+{% endblock %}
