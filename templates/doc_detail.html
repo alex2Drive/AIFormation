@@ -2,6 +2,27 @@
 
 {% block title %}{{ doc_type|title }} - Documentatie{% endblock %}
 
+{% macro render_value(value, depth=0) %}
+    {% if value is mapping %}
+        <div class="nested-object" style="margin-left: {{ depth * 20 }}px;">
+            {% for k, v in value.items() %}
+                <div class="data-row">
+                    <strong>{{ k|replace('_', ' ')|title }}:</strong>
+                    {{ render_value(v, depth + 1) }}
+                </div>
+            {% endfor %}
+        </div>
+    {% elif value is iterable and value is not string %}
+        <ul class="data-list">
+            {% for item in value %}
+                <li>{{ render_value(item, depth + 1) }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <span class="data-value">{{ value }}</span>
+    {% endif %}
+{% endmacro %}
+
 {% block content %}
 <div class="container">
     <div class="breadcrumb">
@@ -95,7 +116,7 @@
                     {% for category, tech in doc_data.technologies.items() %}
                     <div class="tech-category">
                         <h4>{{ category|title }}</h4>
-                        <p>{{ tech }}</p>
+                        <div class="tech-content">{{ render_value(tech) }}</div>
                     </div>
                     {% endfor %}
                 </div>
@@ -147,39 +168,87 @@
                 {% endif %}
             </div>
 
+        {% elif doc_type == 'workflows' %}
+            <div class="info-section">
+                {% if doc_data.workflows %}
+                <h2>Workflows</h2>
+                {% for workflow in doc_data.workflows %}
+                <div class="workflow-card">
+                    <h3>{{ workflow.name or workflow.workflow_name or 'Workflow' }}</h3>
+                    {% if workflow.description %}
+                    <p>{{ workflow.description }}</p>
+                    {% endif %}
+                    {% if workflow.steps %}
+                    <h4>Stappen:</h4>
+                    <ol class="workflow-steps">
+                        {% for step in workflow.steps %}
+                        <li>{{ render_value(step) }}</li>
+                        {% endfor %}
+                    </ol>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                {% else %}
+                <!-- Generic workflow view -->
+                <h2>Workflows</h2>
+                {{ render_value(doc_data) }}
+                {% endif %}
+            </div>
+
+        {% elif doc_type == 'classes' %}
+            <div class="info-section">
+                {% if doc_data.classes %}
+                <h2>Classes</h2>
+                {% for class_item in doc_data.classes %}
+                <div class="class-card">
+                    <h3>{{ class_item.name or class_item.class_name }}</h3>
+                    {% if class_item.description %}
+                    <p>{{ class_item.description }}</p>
+                    {% endif %}
+                    {% if class_item.methods %}
+                    <h4>Methods:</h4>
+                    <ul class="methods-list">
+                        {% for method in class_item.methods %}
+                        <li>{{ render_value(method) }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    {% if class_item.properties %}
+                    <h4>Properties:</h4>
+                    <ul class="properties-list">
+                        {% for prop in class_item.properties %}
+                        <li>{{ render_value(prop) }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                {% else %}
+                <!-- Generic class view -->
+                <h2>Classes</h2>
+                {{ render_value(doc_data) }}
+                {% endif %}
+            </div>
+
         {% elif doc_type == 'files' %}
             <div class="info-section">
-                {% if doc_data.structure %}
                 <h2>File Structuur</h2>
                 <div class="file-tree">
-                    {{ render_file_tree(doc_data.structure) }}
+                    {{ render_value(doc_data) }}
                 </div>
-                {% endif %}
             </div>
 
         {% else %}
             <!-- Generic view voor andere doc types -->
             <div class="info-section">
-                <h2>Data</h2>
+                <h2>{{ doc_type|replace('_', ' ')|title }}</h2>
                 <div class="data-preview">
                     {% for key, value in doc_data.items() %}
                     <div class="data-item">
                         <strong>{{ key|replace('_', ' ')|title }}:</strong>
-                        {% if value is mapping %}
-                            <ul>
-                            {% for k, v in value.items() %}
-                            <li><strong>{{ k }}:</strong> {{ v }}</li>
-                            {% endfor %}
-                            </ul>
-                        {% elif value is iterable and value is not string %}
-                            <ul>
-                            {% for item in value %}
-                            <li>{{ item }}</li>
-                            {% endfor %}
-                            </ul>
-                        {% else %}
-                            {{ value }}
-                        {% endif %}
+                        <div class="data-content">
+                            {{ render_value(value) }}
+                        </div>
                     </div>
                     {% endfor %}
                 </div>

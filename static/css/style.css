@@ -1417,6 +1417,144 @@ body {
     margin-top: 1rem;
 }
 
+/* Nested Data Rendering */
+.nested-object {
+    background: var(--bg-secondary);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    margin: 0.5rem 0;
+    border-left: 3px solid var(--primary-color);
+}
+
+.data-row {
+    margin: 0.75rem 0;
+    padding: 0.5rem;
+    background: var(--bg-primary);
+    border-radius: 4px;
+}
+
+.data-row strong {
+    color: var(--primary-color);
+    display: inline-block;
+    min-width: 150px;
+    font-weight: 600;
+}
+
+.data-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 0.5rem 0;
+}
+
+.data-list li {
+    padding: 0.5rem 0.75rem;
+    margin: 0.25rem 0;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    border-left: 2px solid var(--info-color);
+}
+
+.data-value {
+    color: var(--text-primary);
+    word-wrap: break-word;
+}
+
+.data-content {
+    margin-top: 0.5rem;
+}
+
+.data-item {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: var(--bg-primary);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+}
+
+.data-item strong {
+    color: var(--text-primary);
+    font-size: 1.05rem;
+    display: block;
+    margin-bottom: 0.75rem;
+}
+
+/* Workflow and Class Cards */
+.workflow-card,
+.class-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    margin: 1rem 0;
+    box-shadow: var(--box-shadow);
+}
+
+.workflow-card h3,
+.class-card h3 {
+    color: var(--primary-color);
+    margin-bottom: 0.75rem;
+}
+
+.workflow-card h4,
+.class-card h4 {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.workflow-steps {
+    counter-reset: step-counter;
+    list-style: none;
+    padding-left: 0;
+}
+
+.workflow-steps li {
+    counter-increment: step-counter;
+    padding: 0.75rem;
+    margin: 0.5rem 0;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    position: relative;
+    padding-left: 3rem;
+}
+
+.workflow-steps li::before {
+    content: counter(step-counter);
+    position: absolute;
+    left: 0.75rem;
+    top: 0.75rem;
+    background: var(--primary-color);
+    color: white;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.methods-list,
+.properties-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.methods-list li,
+.properties-list li {
+    padding: 0.5rem 0.75rem;
+    margin: 0.25rem 0;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    border-left: 2px solid var(--success-color);
+}
+
+.tech-content {
+    margin-top: 0.5rem;
+}
+
 /* Footer */
 .footer {
     background-color: var(--bg-primary);
